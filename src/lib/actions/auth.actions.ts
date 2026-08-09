@@ -124,12 +124,15 @@ export async function signUp(
  * Begin Google OAuth sign-in. Returns the Google authorization URL for the
  * client to navigate to. The PKCE code-verifier is stored in a cookie (server
  * client) so `/auth/callback` can exchange the code on the return leg.
- * `role` (from the signup role picker) is stored as user_metadata for NEW
- * users so the `on_auth_user_created` trigger creates the right role.
+ *
+ * Google users are created with the default "student" role by the
+ * `on_auth_user_created` trigger. If the user wants to sell, they can
+ * complete `/business/onboarding` to upgrade to a business account.
  */
-export async function signInWithGoogle(
-  role?: "student" | "business"
-): Promise<{ error?: string; url?: string }> {
+export async function signInWithGoogle(): Promise<{
+  error?: string;
+  url?: string;
+}> {
   const supabase = await createClient();
 
   const appUrl =
@@ -139,7 +142,6 @@ export async function signInWithGoogle(
     provider: "google",
     options: {
       redirectTo: `${appUrl}/auth/callback`,
-      data: role ? { role } : undefined,
     },
   });
 

@@ -30,21 +30,16 @@ function GoogleIcon(props: SVGProps<SVGSVGElement>) {
 }
 
 interface GoogleSignInButtonProps {
-  /** Optional role from the signup role picker — stored as metadata for NEW users. */
-  role?: "student" | "business";
   children: ReactNode;
 }
 
-export function GoogleSignInButton({
-  role,
-  children,
-}: GoogleSignInButtonProps) {
+export function GoogleSignInButton({ children }: GoogleSignInButtonProps) {
   const [pending, setPending] = useState(false);
 
   const handleClick = async () => {
     setPending(true);
     try {
-      const res = await signInWithGoogle(role);
+      const res = await signInWithGoogle();
       if (res?.error) {
         toast.error(res.error);
         return;

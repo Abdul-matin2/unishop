@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import {
   Card,
   CardContent,
@@ -263,6 +264,18 @@ export default function SignupPage() {
             <ArrowRight data-icon="inline-end" />
           </Button>
         </form>
+
+        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <span className="h-px flex-1 bg-border" />
+          or continue with
+          <span className="h-px flex-1 bg-border" />
+        </div>
+
+        <GoogleSignInButton>Sign up with Google</GoogleSignInButton>
+        <p className="text-center text-xs text-muted-foreground">
+          Google accounts start as students — select &quot;I&apos;m a Business
+          Owner&quot; and complete onboarding after logging in to sell.
+        </p>
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
