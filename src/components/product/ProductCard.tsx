@@ -1,0 +1,175 @@
+"use client";
+
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { MapPin, ShoppingBag, ShoppingCart, Zap } from "lucide-react";
+
+import { addToCart } from "@/lib/actions/cart.actions";
+import type { Product } from "@/lib/types";
+import { ROUTES } from "@/lib/constants";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import RatingStars from "@/components/product/RatingStars";
+import { WishlistButton } from "@/components/product/WishlistButton";
+
+const priceFormatter = new Intl.NumberFormat("en-GH", {
+  style: "currency",
+  currency: "GHS",
+});
+
+function formatPrice(value: number): string {
+  return priceFormatter.format(value);
+}
+
+interface ProductCardProps {
+  product: Product;
+}
+
+export function ProductCard({ product }: ProductCardProps) {
+  const router = useRouter();
+  const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(
+    null
+  );
+  const categoryName = product.category?.name ?? "General";
+  const onSale =
+    product.original_price != null && product.original_price > product.price;
+  const discountPercent = onSale
+    ? Math.round(
+        ((product.original_price! - product.price) / product.original_price!) *
+          100
+      )
+    : null;
+
+  const handleAddToCart = async () => {
+    setPendingAction("add");
+    try {
+      const result = await addToCart(product.id, 1);
+      if (result.error) {
+        toast.error(result.error);
+        if (result.error.toLowerCase().includes("log in")) {
+          router.push(ROUTES.login);
+        }
+        return;
+      }
+      toast.success(`"${product.title}" added to cart.`);
+      router.refresh();
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleBuyNow = async () => {
+    setPendingAction("buy");
+    try {
+      const result = await addToCart(product.id, 1);
+      if (result.error) {
+        toast.error(result.error);
+        if (result.error.toLowerCase().includes("log in")) {
+          router.push(ROUTES.login);
+        }
+        return;
+      }
+      router.push(ROUTES.checkout);
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  return (
+    <div className="group flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      {/* Image + category badge */}
+      <Link
+        href={ROUTES.product(product.slug)}
+        className="relative block aspect-square w-full overflow-hidden bg-muted"
+      >
+        {product.image_url ? (
+          <Image
+            src={product.image_url}
+            alt={product.title}
+            fill
+            unoptimized
+            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center text-muted-foreground">
+            <ShoppingBag className="size-8" />
+          </span>
+        )}
+
+        <WishlistButton
+          productId={product.id}
+          className="absolute top-2 right-2"
+        />
+
+        {discountPercent != null && (
+          <span className="absolute top-2 left-2 rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold text-white">
+            -{discountPercent}%
+          </span>
+        )}
+
+        <Badge className="absolute bottom-2 left-2 bg-background/90 text-foreground backdrop-blur">
+          {categoryName}
+        </Badge>
+      </Link>
+
+      {/* Details */}
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <Link
+          href={ROUTES.product(product.slug)}
+          className="focus-visible:outline-none"
+        >
+          <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
+            {product.title}
+          </h3>
+        </Link>
+
+        <RatingStars rating={product.rating_avg} count={product.rating_count} />
+
+        {product.location && (
+          <p className="flex items-center gap-1 text-xs text-muted-foreground">
+            <MapPin className="size-3 shrink-0" />
+            <span className="truncate">{product.location}</span>
+          </p>
+        )}
+
+        <div className="mt-auto flex flex-wrap items-baseline gap-2 pt-1">
+          <span className="text-lg font-bold text-foreground">
+            {formatPrice(product.price)}
+          </span>
+          {onSale && (
+            <span className="text-sm text-muted-foreground line-through">
+              {formatPrice(product.original_price!)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 p-4 pt-0">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={handleAddToCart}
+          disabled={pendingAction !== null}
+        >
+          <ShoppingCart className="size-4" />
+          Add to Cart
+        </Button>
+        <Button
+          className="flex-1"
+          onClick={handleBuyNow}
+          disabled={pendingAction !== null}
+        >
+          <Zap className="size-4" />
+          Buy Now
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export default ProductCard;
