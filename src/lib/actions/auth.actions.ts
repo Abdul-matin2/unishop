@@ -1,9 +1,28 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ROUTES } from "@/lib/constants";
+
+/**
+ * Resolve the app's public origin from the current request. Server actions
+ * run in response to a request, so the Host header reflects the domain the
+ * user is actually on — localhost in dev, the deployed domain in production.
+ * This avoids baking a hardcoded NEXT_PUBLIC_SITE_URL into the build (which
+ * pointed every redirect/verification link at http://localhost:3000 after
+ * deployment).
+ */
+async function getAppUrl(): Promise<string> {
+  const headersList = await headers();
+  const host = headersList.get("host");
+  if (host) {
+    const proto = headersList.get("x-forwarded-proto") ?? "http";
+    return `${proto}://${host}`;
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+}
 
 /**
  * Shared shape for auth / profile action results. When used with
@@ -92,8 +111,7 @@ export async function signUp(
     metadata.business_name = businessName;
   }
 
-  const appUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const appUrl = await getAppUrl();
 
   const { data, error } = await supabase.auth.signUp({
     email,
@@ -135,8 +153,7 @@ export async function signInWithGoogle(): Promise<{
 }> {
   const supabase = await createClient();
 
-  const appUrl =
-    process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+  const appUrl = await getAppUrl();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -165,8 +182,11 @@ export async function resetPassword(
   const supabase = await createClient();
   const email = formData.get("email") as string;
 
+  // Send the user back to our app (not the Supabase domain) after recovery.
+  const appUrl = await getAppUrl();
+
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/v1/verify?redirect_to=${process.env.NEXT_PUBLIC_SUPABASE_URL}/reset-password`,
+    redirectTo: `${appUrl}/auth/callback`,
   });
 
   if (error) {
