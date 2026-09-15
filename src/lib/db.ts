@@ -35,7 +35,7 @@ export async function getProducts({
 
   let qb = supabase
     .from("products")
-    .select("*, category:categories(*), business:businesses(id, business_name, slug)", { count: "exact" })
+    .select("*, category:categories(*), business:businesses(id, business_name, slug, phone)", { count: "exact" })
     .eq("is_active", true);
 
   if (featured) {
@@ -92,7 +92,7 @@ export async function getProduct(slug: string) {
 
   const { data, error } = await supabase
     .from("products")
-    .select("*, category:categories(*), business:businesses(id, business_name, slug, logo_url)")
+    .select("*, category:categories(*), business:businesses(id, business_name, slug, logo_url, phone)")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
@@ -440,7 +440,7 @@ export async function getWishlist(userId: string) {
 
   const { data, error } = await supabase
     .from("wishlist_items")
-    .select("*, product:products(*, business:businesses(id, business_name))")
+    .select("*, product:products(*, business:businesses(id, business_name, phone))")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 

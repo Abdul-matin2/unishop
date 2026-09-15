@@ -2,17 +2,15 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { MapPin, ShoppingBag, ShoppingCart, Zap } from "lucide-react";
+import { MapPin, Phone, ShoppingBag } from "lucide-react";
 
-import { addToCart } from "@/lib/actions/cart.actions";
 import type { Product } from "@/lib/types";
 import { ROUTES } from "@/lib/constants";
+import { buildWhatsAppHref, cn, telHref } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import RatingStars from "@/components/product/RatingStars";
+import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { WishlistButton } from "@/components/product/WishlistButton";
 
 const priceFormatter = new Intl.NumberFormat("en-GH", {
@@ -29,10 +27,6 @@ interface ProductCardProps {
 }
 
 export function ProductCard({ product }: ProductCardProps) {
-  const router = useRouter();
-  const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(
-    null
-  );
   const categoryName = product.category?.name ?? "General";
   const onSale =
     product.original_price != null && product.original_price > product.price;
@@ -43,40 +37,15 @@ export function ProductCard({ product }: ProductCardProps) {
       )
     : null;
 
-  const handleAddToCart = async () => {
-    setPendingAction("add");
-    try {
-      const result = await addToCart(product.id, 1);
-      if (result.error) {
-        toast.error(result.error);
-        if (result.error.toLowerCase().includes("log in")) {
-          router.push(ROUTES.login);
-        }
-        return;
-      }
-      toast.success(`"${product.title}" added to cart.`);
-      router.refresh();
-    } finally {
-      setPendingAction(null);
-    }
-  };
-
-  const handleBuyNow = async () => {
-    setPendingAction("buy");
-    try {
-      const result = await addToCart(product.id, 1);
-      if (result.error) {
-        toast.error(result.error);
-        if (result.error.toLowerCase().includes("log in")) {
-          router.push(ROUTES.login);
-        }
-        return;
-      }
-      router.push(ROUTES.checkout);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  // Contact the seller directly — no cart/checkout in the buyer flow.
+  const phone = product.business?.phone ?? null;
+  const phoneHref = phone ? telHref(phone) : null;
+  const whatsappHref = phone
+    ? buildWhatsAppHref(
+        phone,
+        `Hi — I'm interested in "${product.title}" on UniShop. Is it still available?`
+      )
+    : null;
 
   return (
     <div className="group flex flex-col overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
@@ -148,25 +117,39 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Actions — call or WhatsApp the seller directly */}
       <div className="flex gap-2 p-4 pt-0">
-        <Button
-          variant="outline"
-          className="flex-1"
-          onClick={handleAddToCart}
-          disabled={pendingAction !== null}
-        >
-          <ShoppingCart className="size-4" />
-          Add to Cart
-        </Button>
-        <Button
-          className="flex-1"
-          onClick={handleBuyNow}
-          disabled={pendingAction !== null}
-        >
-          <Zap className="size-4" />
-          Buy Now
-        </Button>
+        {phoneHref && whatsappHref ? (
+          <>
+            <a
+              href={phoneHref}
+              className={cn(buttonVariants({ variant: "outline" }), "flex-1")}
+            >
+              <Phone className="size-4" />
+              Call Seller
+            </a>
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={cn(
+                buttonVariants({ variant: "default" }),
+                "flex-1 bg-[#25D366] text-white hover:bg-[#1DA851]"
+              )}
+            >
+              <WhatsAppIcon className="size-4" />
+              WhatsApp
+            </a>
+          </>
+        ) : (
+          <Link
+            href={ROUTES.product(product.slug)}
+            className={cn(buttonVariants({ variant: "default" }), "flex-1")}
+          >
+            <ShoppingBag className="size-4" />
+            View Details
+          </Link>
+        )}
       </div>
     </div>
   );

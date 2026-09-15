@@ -1,128 +1,68 @@
-"use client";
+import { Phone } from "lucide-react";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingCart, Zap } from "lucide-react";
-import { toast } from "sonner";
-
-import { addToCart } from "@/lib/actions/cart.actions";
-import { ROUTES } from "@/lib/constants";
-import { Button } from "@/components/ui/button";
+import { buildWhatsAppHref, cn, telHref } from "@/lib/utils";
+import { buttonVariants } from "@/components/ui/button";
+import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 
 interface ProductActionsProps {
-  productId: string;
-  stockQuantity: number;
+  phone: string | null;
+  businessName?: string | null;
+  productTitle: string;
 }
 
 /**
- * Quantity stepper plus Add to Cart / Buy Now controls for the product page.
- * Both actions go through `addToCart`; Buy Now then navigates to checkout.
+ * Contact-the-seller controls for the product page: call the phone number or
+ * open WhatsApp with a pre-filled message. There's no cart / Buy Now flow —
+ * the buyer arranges pickup directly with the seller.
  */
-export function ProductActions({ productId, stockQuantity }: ProductActionsProps) {
-  const router = useRouter();
-  const [quantity, setQuantity] = useState(1);
-  const [pendingAction, setPendingAction] = useState<"add" | "buy" | null>(null);
+export function ProductActions({
+  phone,
+  businessName,
+  productTitle,
+}: ProductActionsProps) {
+  const phoneHref = phone ? telHref(phone) : null;
+  const whatsappHref = phone
+    ? buildWhatsAppHref(
+        phone,
+        `Hi ${businessName ?? "there"}, I'm interested in "${productTitle}" on UniShop. Is it still available?`
+      )
+    : null;
 
-  const inStock = stockQuantity > 0;
-  const max = stockQuantity;
-
-  const handleAddToCart = async () => {
-    setPendingAction("add");
-    try {
-      const result = await addToCart(productId, quantity);
-      if (result.error) {
-        toast.error(result.error);
-        if (result.error.toLowerCase().includes("log in")) {
-          router.push(ROUTES.login);
-        }
-        return;
-      }
-      toast.success("Added to cart.");
-      router.refresh();
-    } finally {
-      setPendingAction(null);
-    }
-  };
-
-  const handleBuyNow = async () => {
-    setPendingAction("buy");
-    try {
-      const result = await addToCart(productId, quantity);
-      if (result.error) {
-        toast.error(result.error);
-        if (result.error.toLowerCase().includes("log in")) {
-          router.push(ROUTES.login);
-        }
-        return;
-      }
-      router.push(ROUTES.checkout);
-    } finally {
-      setPendingAction(null);
-    }
-  };
+  if (!phoneHref || !whatsappHref) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="text-sm text-muted-foreground">
+          This seller has not added a phone number yet — send them a message
+          below instead.
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-3">
-      <div>
-        <p className="mb-2 text-sm font-medium">Quantity</p>
-        <div className="flex w-fit items-center rounded-lg border border-input">
-          <button
-            type="button"
-            onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-            disabled={quantity <= 1 || pendingAction !== null}
-            aria-label="Decrease quantity"
-            className="flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-          >
-            <Minus className="size-4" />
-          </button>
-          <span className="w-12 text-center text-sm font-medium">{quantity}</span>
-          <button
-            type="button"
-            onClick={() => setQuantity((value) => Math.min(max, value + 1))}
-            disabled={quantity >= max || pendingAction !== null}
-            aria-label="Increase quantity"
-            className="flex size-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-          >
-            <Plus className="size-4" />
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 sm:flex-row">
-        {inStock ? (
-          <>
-            <Button
-              size="lg"
-              className="flex-1"
-              onClick={handleAddToCart}
-              disabled={pendingAction !== null}
-            >
-              <ShoppingCart className="size-4" />
-              Add to Cart
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="flex-1"
-              onClick={handleBuyNow}
-              disabled={pendingAction !== null}
-            >
-              <Zap className="size-4" />
-              Buy Now
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button size="lg" className="flex-1" disabled>
-              <ShoppingCart className="size-4" />
-              Add to Cart
-            </Button>
-            <Button size="lg" variant="outline" className="flex-1" disabled>
-              Buy Now
-            </Button>
-          </>
+    <div className="flex flex-col gap-3 sm:flex-row">
+      <a
+        href={phoneHref}
+        className={cn(
+          buttonVariants({ variant: "outline", size: "lg" }),
+          "flex-1"
         )}
-      </div>
+      >
+        <Phone className="size-4" />
+        Call Seller
+      </a>
+      <a
+        href={whatsappHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cn(
+          buttonVariants({ variant: "default", size: "lg" }),
+          "flex-1 bg-[#25D366] text-white hover:bg-[#1DA851]"
+        )}
+      >
+        <WhatsAppIcon className="size-4" />
+        WhatsApp Seller
+      </a>
     </div>
   );
 }

@@ -163,10 +163,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <Separator />
 
-          {/* Quantity + Add to Cart / Buy Now */}
+          {/* Call / WhatsApp the seller directly */}
           <ProductActions
-            productId={product.id}
-            stockQuantity={product.stock_quantity}
+            phone={product.business?.phone ?? null}
+            businessName={product.business?.business_name ?? null}
+            productTitle={product.title}
           />
 
           {/* Ask the seller a question */}
