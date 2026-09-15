@@ -163,9 +163,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
           <Separator />
 
-          {/* Call / WhatsApp the seller directly */}
+          {/* Call / WhatsApp the seller directly — per-listing numbers, falling back
+          to the business phone for legacy rows. */}
           <ProductActions
-            phone={product.business?.phone ?? null}
+            whatsappNumber={
+              product.whatsapp_number ?? product.business?.phone ?? null
+            }
+            callNumber={product.call_number ?? product.business?.phone ?? null}
             businessName={product.business?.business_name ?? null}
             productTitle={product.title}
           />

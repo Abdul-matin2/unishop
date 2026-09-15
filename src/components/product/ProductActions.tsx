@@ -5,26 +5,28 @@ import { buttonVariants } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 
 interface ProductActionsProps {
-  phone: string | null;
+  whatsappNumber: string | null;
+  callNumber: string | null;
   businessName?: string | null;
   productTitle: string;
 }
 
 /**
- * Contact-the-seller controls for the product page: call the phone number or
- * open WhatsApp with a pre-filled message. There's no cart / Buy Now flow —
- * the buyer arranges pickup directly with the seller. The buttons always
- * render; they're disabled only when the seller hasn't listed a usable phone.
+ * Contact-the-seller controls for the product page: call the call number or
+ * open WhatsApp with a pre-filled message to the WhatsApp number. There's no
+ * cart / Buy Now flow — the buyer arranges pickup directly with the seller.
+ * The buttons always render; each is disabled only when its number is missing.
  */
 export function ProductActions({
-  phone,
+  whatsappNumber,
+  callNumber,
   businessName,
   productTitle,
 }: ProductActionsProps) {
-  const phoneHref = phone ? telHref(phone) : null;
-  const whatsappHref = phone
+  const phoneHref = callNumber ? telHref(callNumber) : null;
+  const whatsappHref = whatsappNumber
     ? buildWhatsAppHref(
-        phone,
+        whatsappNumber,
         `Hi ${businessName ?? "there"}, I'm interested in "${productTitle}" on UniShop. Is it still available?`
       )
     : null;

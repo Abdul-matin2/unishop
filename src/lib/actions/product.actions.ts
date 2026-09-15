@@ -30,6 +30,16 @@ export async function createProduct(formData: FormData) {
   const institution = (formData.get("institution") as string)?.trim() || null;
   const imageUrl = (formData.get("image_url") as string)?.trim() || null;
 
+  // Seller contact numbers — buyers call / WhatsApp the seller directly.
+  const whatsappNumber = (formData.get("whatsapp_number") as string)?.trim() ?? "";
+  if (!whatsappNumber) {
+    return { error: "A WhatsApp number is required so buyers can message you" };
+  }
+  const callNumber = (formData.get("call_number") as string)?.trim() ?? "";
+  if (!callNumber) {
+    return { error: "A call number is required so buyers can reach you by phone" };
+  }
+
   // Generate slug from title
   const slug = title
     .toLowerCase()
@@ -48,6 +58,8 @@ export async function createProduct(formData: FormData) {
     condition,
     location,
     institution,
+    whatsapp_number: whatsappNumber,
+    call_number: callNumber,
     image_url: imageUrl,
     image_urls: imageUrl ? [imageUrl] : [],
   });
@@ -86,6 +98,16 @@ export async function updateProduct(productId: string, formData: FormData) {
   const institution = (formData.get("institution") as string)?.trim() || null;
   const imageUrl = (formData.get("image_url") as string)?.trim() || null;
 
+  // Seller contact numbers — buyers call / WhatsApp the seller directly.
+  const whatsappNumber = (formData.get("whatsapp_number") as string)?.trim() ?? "";
+  if (!whatsappNumber) {
+    return { error: "A WhatsApp number is required so buyers can message you" };
+  }
+  const callNumber = (formData.get("call_number") as string)?.trim() ?? "";
+  if (!callNumber) {
+    return { error: "A call number is required so buyers can reach you by phone" };
+  }
+
   const { error } = await supabase
     .from("products")
     .update({
@@ -98,6 +120,8 @@ export async function updateProduct(productId: string, formData: FormData) {
       condition,
       location,
       institution,
+      whatsapp_number: whatsappNumber,
+      call_number: callNumber,
       image_url: imageUrl,
       image_urls: imageUrl ? [imageUrl] : [],
     })

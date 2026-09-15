@@ -213,6 +213,38 @@ export function ProductForm({ action, categories, initial }: ProductFormProps) {
             </div>
           </div>
 
+          {/* Seller contact — buyers call or WhatsApp the seller directly */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp_number">WhatsApp Number</Label>
+              <Input
+                id="whatsapp_number"
+                name="whatsapp_number"
+                type="tel"
+                placeholder="e.g. 024 123 4567"
+                defaultValue={initial?.whatsapp_number ?? ""}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Buyers will message this number on WhatsApp.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="call_number">Call Number</Label>
+              <Input
+                id="call_number"
+                name="call_number"
+                type="tel"
+                placeholder="e.g. 024 123 4567"
+                defaultValue={initial?.call_number ?? ""}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Buyers will call this number directly.
+              </p>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-2">
               <Label htmlFor="price">Price (GHS)</Label>

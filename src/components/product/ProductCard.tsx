@@ -37,12 +37,15 @@ export function ProductCard({ product }: ProductCardProps) {
       )
     : null;
 
-  // Contact the seller directly — no cart/checkout in the buyer flow.
-  const phone = product.business?.phone ?? null;
-  const phoneHref = phone ? telHref(phone) : null;
-  const whatsappHref = phone
+  // Contact the seller directly — no cart/checkout in the buyer flow. Prefer
+  // the per-listing numbers, falling back to the business phone for legacy rows.
+  const whatsappNumber =
+    product.whatsapp_number ?? product.business?.phone ?? null;
+  const callNumber = product.call_number ?? product.business?.phone ?? null;
+  const phoneHref = callNumber ? telHref(callNumber) : null;
+  const whatsappHref = whatsappNumber
     ? buildWhatsAppHref(
-        phone,
+        whatsappNumber,
         `Hi — I'm interested in "${product.title}" on UniShop. Is it still available?`
       )
     : null;

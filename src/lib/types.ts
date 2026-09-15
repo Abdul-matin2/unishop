@@ -66,6 +66,10 @@ export interface Product {
   image_urls: string[];
   stock_quantity: number;
   condition: ProductCondition;
+  /** Number buyers use to message the seller on WhatsApp (per listing). */
+  whatsapp_number?: string | null;
+  /** Number buyers dial to call the seller (per listing). */
+  call_number?: string | null;
   /** Meetup/pickup area, required on new products (nullable for legacy rows). */
   location?: string | null;
   /** Ghanaian institution the listing is tied to (optional). */
