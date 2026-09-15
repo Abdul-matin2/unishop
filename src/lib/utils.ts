@@ -39,7 +39,10 @@ export function formatPrice(value: number) {
  */
 export function toInternationalDigits(phone: string): string | null {
   const digits = phone.replace(/\D/g, "")
-  if (digits.length === 12 && digits.startsWith("233")) return digits // already +233…
+  if (digits.length < 9 || digits.length > 15) return null
+  // Already in international form (+233…, +1…, +44…) — use as-is.
+  if (digits.length >= 11) return digits
+  // Ghanaian national formats:
   if (digits.length === 10 && digits.startsWith("0")) return `233${digits.slice(1)}` // 024…
   if (digits.length === 9) return `233${digits}` // 24… (leading 0 dropped)
   return null

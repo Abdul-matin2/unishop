@@ -119,37 +119,40 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Actions — call or WhatsApp the seller directly */}
       <div className="flex gap-2 p-4 pt-0">
-        {phoneHref && whatsappHref ? (
-          <>
-            <a
-              href={phoneHref}
-              className={cn(buttonVariants({ variant: "outline" }), "flex-1")}
-            >
-              <Phone className="size-4" />
-              Call Seller
-            </a>
-            <a
-              href={whatsappHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={cn(
-                buttonVariants({ variant: "default" }),
-                "flex-1 bg-[#25D366] text-white hover:bg-[#1DA851]"
-              )}
-            >
-              <WhatsAppIcon className="size-4" />
-              WhatsApp
-            </a>
-          </>
-        ) : (
-          <Link
-            href={ROUTES.product(product.slug)}
-            className={cn(buttonVariants({ variant: "default" }), "flex-1")}
-          >
-            <ShoppingBag className="size-4" />
-            View Details
-          </Link>
-        )}
+        <a
+          href={phoneHref ?? undefined}
+          tabIndex={phoneHref ? undefined : -1}
+          aria-disabled={!phoneHref || undefined}
+          title={
+            phoneHref ? undefined : "This seller has not added a phone number yet"
+          }
+          className={cn(
+            buttonVariants({ variant: "outline" }),
+            "flex-1",
+            !phoneHref && "pointer-events-none opacity-50"
+          )}
+        >
+          <Phone className="size-4" />
+          Call Seller
+        </a>
+        <a
+          href={whatsappHref ?? undefined}
+          tabIndex={whatsappHref ? undefined : -1}
+          aria-disabled={!whatsappHref || undefined}
+          title={
+            whatsappHref ? undefined : "This seller has not added a phone number yet"
+          }
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            buttonVariants({ variant: "default" }),
+            "flex-1 bg-[#25D366] text-white hover:bg-[#1DA851]",
+            !whatsappHref && "pointer-events-none opacity-50"
+          )}
+        >
+          <WhatsAppIcon className="size-4" />
+          WhatsApp
+        </a>
       </div>
     </div>
   );
