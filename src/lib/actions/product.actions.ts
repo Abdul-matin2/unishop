@@ -135,6 +135,36 @@ export async function updateProduct(productId: string, formData: FormData) {
   redirect("/business/products");
 }
 
+/**
+ * Permanently delete a product (removes the row, images stay in storage).
+ * Scoped to the caller's own business so a seller can't remove another's
+ * listing; RLS also restricts deletes to the product owner. References from
+ * order_items and conversations are set null; cart/review/wishlist rows
+ * cascade.
+ */
+export async function permanentlyDeleteProduct(productId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const { error } = await supabase
+    .from("products")
+    .delete()
+    .eq("id", productId)
+    .eq("business_id", user.id);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  revalidatePath("/business/products", "layout");
+  return { success: true };
+}
+
 export async function deleteProduct(productId: string) {
   const supabase = await createClient();
 

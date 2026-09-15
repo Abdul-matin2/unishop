@@ -4,6 +4,7 @@ import { Plus, Pencil, Power, Search } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { DeleteProductButton } from "./delete-product-button";
 import {
   Card,
   CardContent,
@@ -199,6 +200,10 @@ export default async function BusinessProductsPage() {
                           <Power />
                         </Button>
                       </form>
+                      <DeleteProductButton
+                        productId={product.id}
+                        productTitle={product.title}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
