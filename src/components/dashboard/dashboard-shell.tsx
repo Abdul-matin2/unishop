@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
 import {
   Building2,
+  FileText,
   Heart,
   LayoutDashboard,
   LogOut,
@@ -66,6 +67,7 @@ const NAV_ITEMS: Record<DashboardVariant, NavItem[]> = {
     { href: "/admin/categories", label: "Categories", icon: Tags },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/products", label: "Products", icon: Package },
+    { href: "/admin/pages", label: "Pages", icon: FileText },
   ],
 };
 

@@ -9,6 +9,7 @@ import type {
   WishlistItem,
   Conversation,
   Message,
+  Page,
 } from "@/lib/types";
 
 const ITEMS_PER_PAGE = 8;
@@ -617,4 +618,65 @@ export async function getUnreadMessageCount(userId: string) {
   }
 
   return count || 0;
+}
+
+/**
+ * Get a single content page by its slug (About, Contact, FAQ, ...).
+ * RLS hides unpublished pages from non-admins, so this returns null for
+ * them; callers still check is_published for consistency.
+ */
+export async function getPageBySlug(slug: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("pages")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching page:", error);
+    return null;
+  }
+
+  return (data as Page) || null;
+}
+
+/**
+ * Get a single content page by id (admin editor).
+ */
+export async function getPageById(pageId: string) {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("pages")
+    .select("*")
+    .eq("id", pageId)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching page by id:", error);
+    return null;
+  }
+
+  return (data as Page) || null;
+}
+
+/**
+ * Get all content pages (admin editor list).
+ */
+export async function getAllPages() {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("pages")
+    .select("*")
+    .order("title");
+
+  if (error) {
+    console.error("Error fetching pages:", error);
+    return [];
+  }
+
+  return (data as Page[]) || [];
 }

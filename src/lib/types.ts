@@ -175,6 +175,17 @@ export interface Message {
   read_at: string | null;
 }
 
+export interface Page {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string | null;
+  content: string;
+  is_published: boolean;
+  updated_at: string;
+  updated_by: string | null;
+}
+
 export type ActivityType =
   | "user_registered"
   | "business_pending"
