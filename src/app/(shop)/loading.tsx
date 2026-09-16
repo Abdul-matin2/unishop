@@ -1,19 +1,24 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function Loading() {
+export default async function Loading() {
+  const user = await getCurrentUser();
+
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Hero skeleton */}
-      <div className="bg-gradient-to-r from-indigo-50 to-white py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Skeleton className="h-12 w-96 mb-4" />
-          <Skeleton className="h-6 w-[500px] mb-8" />
-          <div className="flex gap-4">
-            <Skeleton className="h-12 w-40" />
-            <Skeleton className="h-12 w-40" />
+      {/* Hero skeleton — hidden for signed-in users, matching the home page */}
+      {!user && (
+        <div className="bg-gradient-to-r from-indigo-50 to-white py-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Skeleton className="h-12 w-96 mb-4" />
+            <Skeleton className="h-6 w-[500px] mb-8" />
+            <div className="flex gap-4">
+              <Skeleton className="h-12 w-40" />
+              <Skeleton className="h-12 w-40" />
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Categories skeleton */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">

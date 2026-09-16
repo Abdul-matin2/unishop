@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/lib/types";
@@ -5,8 +6,11 @@ import type { Profile } from "@/lib/types";
 /**
  * Get the current authenticated user's profile.
  * Returns null if not authenticated.
+ *
+ * Wrapped in React cache() so the layout and page share a single lookup per
+ * request — the home page needs it to hide the hero for signed-in users.
  */
-export async function getCurrentUser(): Promise<Profile | null> {
+export const getCurrentUser = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
 
   const {
@@ -22,7 +26,7 @@ export async function getCurrentUser(): Promise<Profile | null> {
     .single();
 
   return profile;
-}
+});
 
 /**
  * Require an authenticated user. Redirects to /login if not found.
