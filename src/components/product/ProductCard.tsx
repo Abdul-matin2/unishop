@@ -12,6 +12,7 @@ import { buttonVariants } from "@/components/ui/button";
 import RatingStars from "@/components/product/RatingStars";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { WishlistButton } from "@/components/product/WishlistButton";
+import { ContactGate } from "@/components/shared/ContactGate";
 
 const priceFormatter = new Intl.NumberFormat("en-GH", {
   style: "currency",
@@ -120,9 +121,9 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
       </div>
 
-      {/* Actions — call or WhatsApp the seller directly */}
+      {/* Actions — call or WhatsApp the seller directly (requires sign-in) */}
       <div className="flex gap-2 p-4 pt-0">
-        <a
+        <ContactGate
           href={phoneHref ?? undefined}
           tabIndex={phoneHref ? undefined : -1}
           aria-disabled={!phoneHref || undefined}
@@ -137,8 +138,8 @@ export function ProductCard({ product }: ProductCardProps) {
         >
           <Phone className="size-4" />
           Call Seller
-        </a>
-        <a
+        </ContactGate>
+        <ContactGate
           href={whatsappHref ?? undefined}
           tabIndex={whatsappHref ? undefined : -1}
           aria-disabled={!whatsappHref || undefined}
@@ -155,7 +156,7 @@ export function ProductCard({ product }: ProductCardProps) {
         >
           <WhatsAppIcon className="size-4" />
           WhatsApp
-        </a>
+        </ContactGate>
       </div>
     </div>
   );

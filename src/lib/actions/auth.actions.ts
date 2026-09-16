@@ -47,6 +47,14 @@ export async function signIn(
     password: formData.get("password") as string,
   };
 
+  // Where the user was heading when we asked them to log in (the product page,
+  // e.g. /product/some-slug). Only allow internal paths to avoid open redirects.
+  const redirectTo = formData.get("redirectTo") as string;
+  const safeRedirect =
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : null;
+
   const { error } = await supabase.auth.signInWithPassword(data);
 
   if (error) {
@@ -82,12 +90,12 @@ export async function signIn(
     }
     if (profile?.role === "student") {
       revalidatePath("/", "layout");
-      redirect(ROUTES.home);
+      redirect(safeRedirect || ROUTES.home);
     }
   }
 
   revalidatePath("/", "layout");
-  redirect(ROUTES.home);
+  redirect(safeRedirect || ROUTES.home);
 }
 
 export async function signUp(
@@ -102,6 +110,14 @@ export async function signUp(
   const role = (formData.get("role") as string) || "student";
   const businessName = formData.get("business_name") as string;
 
+  // Preserve the page the user came from (set by ContactGate) so they end up
+  // back there after confirming and logging in. Internal paths only.
+  const redirectTo = formData.get("redirectTo") as string;
+  const safeRedirect =
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : null;
+
   const metadata: Record<string, string> = {
     full_name: fullName,
     role,
@@ -113,13 +129,19 @@ export async function signUp(
 
   const appUrl = await getAppUrl();
 
+  // If the user came from a product page, keep that target in the email link
+  // so /auth/callback can send them back after they confirm.
+  const next = safeRedirect
+    ? `?next=${encodeURIComponent(safeRedirect)}`
+    : "";
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: metadata,
       // Where the confirmation link returns after the email is verified.
-      emailRedirectTo: `${appUrl}/auth/callback`,
+      emailRedirectTo: `${appUrl}/auth/callback${next}`,
     },
   });
 
@@ -133,9 +155,12 @@ export async function signUp(
     return { success: true, email };
   }
 
-  // Confirmation disabled — the account is already active; send to login.
+  // Confirmation disabled — the account is already active; send to login,
+// keeping the caller's redirect target if one was provided.
   revalidatePath("/", "layout");
-  redirect(ROUTES.login);
+  redirect(
+    safeRedirect ? `${ROUTES.login}?redirectTo=${encodeURIComponent(safeRedirect)}` : ROUTES.login
+  );
 }
 
 /**
@@ -147,7 +172,7 @@ export async function signUp(
  * `on_auth_user_created` trigger. If the user wants to sell, they can
  * complete `/business/onboarding` to upgrade to a business account.
  */
-export async function signInWithGoogle(): Promise<{
+export async function signInWithGoogle(redirectTo?: string): Promise<{
   error?: string;
   url?: string;
 }> {
@@ -155,10 +180,19 @@ export async function signInWithGoogle(): Promise<{
 
   const appUrl = await getAppUrl();
 
+  // Carry the caller's target (e.g. a product page) through the OAuth round
+  // trip; /auth/callback picks it up from `next`. Internal paths only.
+  const next =
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? `&next=${encodeURIComponent(redirectTo)}`
+      : "";
+
+  const callbackUrl = next ? `${appUrl}/auth/callback?${next}` : `${appUrl}/auth/callback`;
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${appUrl}/auth/callback`,
+      redirectTo: callbackUrl,
     },
   });
 

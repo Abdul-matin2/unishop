@@ -31,15 +31,20 @@ function GoogleIcon(props: SVGProps<SVGSVGElement>) {
 
 interface GoogleSignInButtonProps {
   children: ReactNode;
+  /** Where to land after the OAuth round trip (e.g. a product page). */
+  redirectTo?: string;
 }
 
-export function GoogleSignInButton({ children }: GoogleSignInButtonProps) {
+export function GoogleSignInButton({
+  children,
+  redirectTo,
+}: GoogleSignInButtonProps) {
   const [pending, setPending] = useState(false);
 
   const handleClick = async () => {
     setPending(true);
     try {
-      const res = await signInWithGoogle();
+      const res = await signInWithGoogle(redirectTo);
       if (res?.error) {
         toast.error(res.error);
         return;

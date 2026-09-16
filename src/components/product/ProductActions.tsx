@@ -3,6 +3,7 @@ import { Phone } from "lucide-react";
 import { buildWhatsAppHref, cn, telHref } from "@/lib/utils";
 import { buttonVariants } from "@/components/ui/button";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
+import { ContactGate } from "@/components/shared/ContactGate";
 
 interface ProductActionsProps {
   whatsappNumber: string | null;
@@ -36,7 +37,7 @@ export function ProductActions({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row">
-        <a
+        <ContactGate
           href={phoneHref ?? undefined}
           tabIndex={phoneHref ? undefined : -1}
           aria-disabled={!phoneHref || undefined}
@@ -49,8 +50,8 @@ export function ProductActions({
         >
           <Phone className="size-4" />
           Call Seller
-        </a>
-        <a
+        </ContactGate>
+        <ContactGate
           href={whatsappHref ?? undefined}
           tabIndex={whatsappHref ? undefined : -1}
           aria-disabled={!whatsappHref || undefined}
@@ -65,7 +66,7 @@ export function ProductActions({
         >
           <WhatsAppIcon className="size-4" />
           WhatsApp Seller
-        </a>
+        </ContactGate>
       </div>
       {(!phoneHref || !whatsappHref) && (
         <p className="text-sm text-muted-foreground">

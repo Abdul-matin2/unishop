@@ -11,7 +11,14 @@ import { ROUTES } from "@/lib/constants";
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? ROUTES.home;
+  // Where to send the user after a successful exchange. Only ever allow the
+  // same origin — the bare `startsWith("/")` check lets the `/\evil.com`
+  // trick slip through `new URL(..., base)` as an external redirect.
+  const parsedNext = new URL(searchParams.get("next") ?? ROUTES.home, request.url);
+  const next =
+    parsedNext.origin === new URL(request.url).origin
+      ? parsedNext.pathname + parsedNext.search
+      : ROUTES.home;
 
   if (code) {
     const supabase = await createClient();

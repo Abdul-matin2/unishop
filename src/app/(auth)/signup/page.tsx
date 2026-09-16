@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   AlertTriangle,
   ArrowRight,
@@ -49,6 +50,20 @@ const ROLES: {
 ];
 
 export default function SignupPage() {
+  return (
+    <Suspense fallback={null}>
+      <SignupForm />
+    </Suspense>
+  );
+}
+
+function SignupForm() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get("redirectTo");
+  // Pass the caller's target along if the user hops to login from signup.
+  const loginHref = redirectTo
+    ? `/login?redirectTo=${encodeURIComponent(redirectTo)}`
+    : "/login";
   const [state, formAction, pending] = useActionState(signUp, null);
   const [role, setRole] = useState<Role>("student");
   const [password, setPassword] = useState("");
@@ -91,7 +106,7 @@ export default function SignupPage() {
             </p>
           </div>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button nativeButton={false} render={<Link href="/login" />}>
+            <Button nativeButton={false} render={<Link href={loginHref} />}>
               Go to Login
             </Button>
           </div>
@@ -121,6 +136,10 @@ export default function SignupPage() {
               <span>{state.error}</span>
             </div>
           ) : null}
+
+          {/* Return the user to the page they were on (e.g. a product) after
+          they confirm and log in — set by ContactGate, not by hand. */}
+          {redirectTo && <input type="hidden" name="redirectTo" value={redirectTo} />}
 
           <div className="space-y-2">
             <Label>I am joining as a…</Label>
@@ -271,7 +290,9 @@ export default function SignupPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <GoogleSignInButton>Sign up with Google</GoogleSignInButton>
+        <GoogleSignInButton redirectTo={redirectTo ?? undefined}>
+          Sign up with Google
+        </GoogleSignInButton>
         <p className="text-center text-xs text-muted-foreground">
           Google accounts start as students — select &quot;I&apos;m a Business
           Owner&quot; and complete onboarding after logging in to sell.
@@ -279,7 +300,7 @@ export default function SignupPage() {
 
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link href="/login" className="font-medium text-primary hover:underline">
+          <Link href={loginHref} className="font-medium text-primary hover:underline">
             Log in
           </Link>
         </p>

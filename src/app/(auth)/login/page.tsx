@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
+import { useSearchParams } from "next/navigation";
 import { AlertTriangle, ArrowRight, Lock, Mail } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,15 @@ import { Label } from "@/components/ui/label";
 import { signIn } from "@/lib/actions/auth.actions";
 
 export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
+function LoginForm() {
+  const searchParams = useSearchParams();
   const [state, formAction, pending] = useActionState(signIn, null);
 
   return (
@@ -42,6 +52,12 @@ export default function LoginPage() {
               <span>{state.error}</span>
             </div>
           ) : null}
+
+          {/* Return the user to the page they were on (e.g. a product) after
+          a successful log in — set by ContactGate, not by hand. */}
+          {searchParams.get("redirectTo") && (
+            <input type="hidden" name="redirectTo" value={searchParams.get("redirectTo")!} />
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -102,11 +118,20 @@ export default function LoginPage() {
           <span className="h-px flex-1 bg-border" />
         </div>
 
-        <GoogleSignInButton>Continue with Google</GoogleSignInButton>
+        <GoogleSignInButton redirectTo={searchParams.get("redirectTo") ?? undefined}>
+          Continue with Google
+        </GoogleSignInButton>
 
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline">
+          <Link
+            href={
+              searchParams.get("redirectTo")
+                ? `/signup?redirectTo=${searchParams.get("redirectTo")}`
+                : "/signup"
+            }
+            className="font-medium text-primary hover:underline"
+          >
             Sign up
           </Link>
         </p>
