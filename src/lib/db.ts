@@ -48,7 +48,23 @@ export async function getProducts({
   }
 
   if (category) {
-    qb = qb.eq("categories.slug", category);
+    // Filtering on the embedded `categories` table is unreliable — the embed
+    // is aliased (`category:categories(*)`) and PostgREST here silently
+    // ignores those filters, which leaks products from every category into
+    // the selected one. Resolve the slug to an id and filter the product's
+    // own column instead.
+    const { data: matched } = await supabase
+      .from("categories")
+      .select("id")
+      .eq("slug", category)
+      .maybeSingle();
+
+    if (matched) {
+      qb = qb.eq("category_id", matched.id);
+    } else {
+      // Unknown category slug — match nothing rather than everything.
+      qb = qb.eq("category_id", "00000000-0000-0000-0000-000000000000");
+    }
   }
 
   // Sorting
